@@ -15,10 +15,10 @@
     </style>
 </head>
 <body class="p-6">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-[1600px] mx-auto">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-400">Anibis 核心監控系統 <span class="text-sm font-normal text-slate-500">v1.0</span></h1>
+            <h1 class="text-3xl font-bold text-blue-400">Anibis 核心監控系統 <span class="text-sm font-normal text-slate-500">v1.2</span></h1>
             <div class="flex gap-4">
                 <div class="glass px-4 py-2 rounded-lg text-sm">
                     狀態: <span class="text-green-400">運作中</span>
@@ -27,16 +27,16 @@
         </div>
 
         <!-- Main Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
             
-            <!-- Column 1: System Status -->
-            <div class="flex flex-col gap-6">
+            <!-- Column 1: System Status & Ideas -->
+            <div class="flex flex-col gap-4">
                 <div class="glass p-6 rounded-2xl">
                     <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">系統狀態</h2>
                     <div class="space-y-4">
                         <div>
                             <div class="flex justify-between text-sm mb-1">
-                                <span>Token 使用量 (gemini-3-flash)</span>
+                                <span>Token 使用量</span>
                                 <span id="token-percent-text">--%</span>
                             </div>
                             <div class="w-full bg-slate-700 rounded-full h-2">
@@ -44,68 +44,72 @@
                             </div>
                         </div>
                         <div class="text-sm text-slate-400">
-                            <p>GitHub 連線: <span id="github-status" class="text-green-400">檢查中...</span></p>
-                            <p>最後更新: <span id="last-sync" class="text-slate-500 text-xs">--</span></p>
+                            <p>GitHub: <span id="github-status" class="text-green-400">連線中</span></p>
+                            <p>更新: <span id="last-sync" class="text-slate-500 text-[10px]">--</span></p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Idea Zone -->
                 <div class="glass p-6 rounded-2xl bg-slate-800/50">
-                    <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-yellow-500">Idea 靈感區</h2>
+                    <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-yellow-500">Idea 靈感</h2>
                     <div id="idea-list" class="space-y-3 min-h-[150px]">
-                        <!-- Existing Ideas -->
-                        <div class="card glass p-4 rounded-xl border-l-4 border-yellow-500">
-                            <h3 class="font-bold">GitHub 全自動獵人</h3>
-                            <p class="text-xs text-slate-400">自動搜尋並報告新技能與熱門專案</p>
+                        <div class="card glass p-3 rounded-xl border-l-4 border-yellow-500">
+                            <h3 class="font-bold text-sm">GitHub 全自動獵人</h3>
                         </div>
-                        <div class="card glass p-4 rounded-xl border-l-4 border-purple-500">
-                            <h3 class="font-bold">全自動程式碼工坊</h3>
-                            <p class="text-xs text-slate-400">根據構想自動建立專案並發起 PR</p>
+                        <div class="card glass p-3 rounded-xl border-l-4 border-purple-500">
+                            <h3 class="font-bold text-sm">全自動程式碼工坊</h3>
                         </div>
-                        <!-- New Strategic Ideas -->
-                        <div class="card glass p-4 rounded-xl border-l-4 border-pink-500">
-                            <h3 class="font-bold text-pink-400">🔊 金融戰情語音簡報</h3>
-                            <p class="text-xs text-slate-400">每日清晨語音彙整川普動態與斐波點位</p>
+                        <div class="card glass p-3 rounded-xl border-l-4 border-pink-500">
+                            <h3 class="font-bold text-sm">🔊 語音簡報</h3>
                         </div>
-                        <div class="card glass p-4 rounded-xl border-l-4 border-cyan-500">
-                            <h3 class="font-bold text-cyan-400">👥 雙重人格部隊</h3>
-                            <p class="text-xs text-slate-400">群組配置先鋒官與軍師，分工討論實作</p>
-                        </div>
-                        <div class="card glass p-4 rounded-xl border-l-4 border-orange-500">
-                            <h3 class="font-bold text-orange-400">🗺️ 互動式總經關聯地圖</h3>
-                            <p class="text-xs text-slate-400">Canvas 視覺化連結關稅、利率與幣價</p>
+                        <div class="card glass p-3 rounded-xl border-l-4 border-orange-500">
+                            <h3 class="font-bold text-sm">🗺️ 總經地圖</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Column 2: Waiting -->
-            <div class="glass p-6 rounded-2xl border-t-4 border-slate-500">
-                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">等待中</h2>
-                <div id="waiting-list" class="space-y-3 min-h-[300px]">
-                    <!-- Items will go here -->
+            <!-- Column 2: Discussion -->
+            <div class="glass p-6 rounded-2xl border-t-4 border-indigo-500 bg-indigo-900/10">
+                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-indigo-400">💬 討論區</h2>
+                <div id="discussion-list" class="space-y-3 min-h-[300px]">
+                    <div class="card glass p-4 rounded-xl border-l-4 border-indigo-400">
+                        <h3 class="font-bold">戰略目標：財務自由</h3>
+                        <p class="text-xs text-slate-400 italic">"主公大人偏好白話、實作導引與有立場的建議。"</p>
+                    </div>
+                    <div class="card glass p-4 rounded-xl border-l-4 border-indigo-300">
+                        <h3 class="font-bold">技術分析筆記</h3>
+                        <p class="text-xs text-slate-400">斐波繪製法：1軸為底部起點，0軸為頂部。</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Column 3: Executing -->
+            <!-- Column 3: Waiting -->
+            <div class="glass p-6 rounded-2xl border-t-4 border-slate-500">
+                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-slate-400">等待中</h2>
+                <div id="waiting-list" class="space-y-3 min-h-[300px]">
+                </div>
+            </div>
+
+            <!-- Column 4: Executing -->
             <div class="glass p-6 rounded-2xl border-t-4 border-blue-500">
-                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">執行中</h2>
+                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-blue-400">執行中</h2>
                 <div id="executing-list" class="space-y-3 min-h-[300px]">
                     <div class="card glass p-4 rounded-xl border-l-4 border-blue-400">
-                        <h3 class="font-bold">靈魂雲端同步</h3>
-                        <p class="text-xs text-slate-400">持續備份中...</p>
+                        <h3 class="font-bold">核心監控系統 v1.2</h3>
+                        <p class="text-xs text-slate-400">討論區塊建置中...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Column 4: Completed -->
+            <!-- Column 5: Completed -->
             <div class="glass p-6 rounded-2xl border-t-4 border-green-500">
-                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">已完成</h2>
+                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-green-400">已完成</h2>
                 <div id="completed-list" class="space-y-3 min-h-[300px]">
                     <div class="card glass p-4 rounded-xl border-l-4 border-green-400">
-                        <h3 class="font-bold">Anibis-Soul-Sync 建立</h3>
-                        <p class="text-xs text-slate-400">私有庫配置完成</p>
+                        <h3 class="font-bold">靈魂雲端同步</h3>
+                        <p class="text-xs text-slate-400">私有庫安全配置完成</p>
                     </div>
                     <div class="card glass p-4 rounded-xl border-l-4 border-green-400">
                         <h3 class="font-bold">GitHub 技能激活</h3>
@@ -123,11 +127,12 @@
 
     <script>
         const ideaList = document.getElementById('idea-list');
+        const discussionList = document.getElementById('discussion-list');
         const waitingList = document.getElementById('waiting-list');
         const executingList = document.getElementById('executing-list');
         const completedList = document.getElementById('completed-list');
 
-        [ideaList, waitingList, executingList, completedList].forEach(el => {
+        [ideaList, discussionList, waitingList, executingList, completedList].forEach(el => {
             new Sortable(el, {
                 group: 'shared',
                 animation: 150,
