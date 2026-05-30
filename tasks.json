@@ -1,13 +1,134 @@
 {
   "tasks": [
     {
+      "task_id": "github-idea-digital-shadow",
+      "title": "數位影子計畫",
+      "description": "存檔主公知識與語氣，實現自動化社交與邏輯克隆。",
+      "stage": "idea",
+      "priority": "high",
+      "category": "Legacy GitHub",
+      "sort_order": 0,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-idea-auto-hunter",
+      "title": "GitHub 全自動獵人",
+      "description": "自動偵測開源專案更新與 AI 新技能。",
+      "stage": "idea",
+      "priority": "medium",
+      "category": "Legacy GitHub",
+      "sort_order": 1,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-idea-code-workshop",
+      "title": "全自動程式碼工坊",
+      "description": "根據構想自動建庫並分階段提交實作。",
+      "stage": "idea",
+      "priority": "medium",
+      "category": "Legacy GitHub",
+      "sort_order": 2,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-idea-voice-briefing",
+      "title": "語音簡報",
+      "description": "清晨語音彙整美聯儲、川普言論與斐波點位。",
+      "stage": "idea",
+      "priority": "medium",
+      "category": "Legacy GitHub",
+      "sort_order": 3,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-idea-macro-map",
+      "title": "總經地圖",
+      "description": "視覺化連結關稅、利率與幣價之因果關係。",
+      "stage": "idea",
+      "priority": "medium",
+      "category": "Legacy GitHub",
+      "sort_order": 4,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-discussion-financial-freedom",
+      "title": "戰略目標：財務自由",
+      "description": "主公大人偏好白話、實作導引與有立場的建議。",
+      "stage": "discussion",
+      "priority": "high",
+      "category": "Legacy GitHub",
+      "sort_order": 0,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-discussion-technical-analysis",
+      "title": "技術分析筆記",
+      "description": "斐波繪製法：1軸為底部起點，0軸為頂部。",
+      "stage": "discussion",
+      "priority": "medium",
+      "category": "Legacy GitHub",
+      "sort_order": 1,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-executing-core-monitor",
+      "title": "核心監控系統 v1.2",
+      "description": "討論區塊建置中...",
+      "stage": "executing",
+      "priority": "high",
+      "category": "Legacy GitHub",
+      "sort_order": 0,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-completed-avatar-domain",
+      "title": "分身領地部署",
+      "description": "已建立 .openclaw-office 獨立環境與 Isis/Horus/Ammit 配置。",
+      "stage": "completed",
+      "priority": "low",
+      "category": "Legacy GitHub",
+      "sort_order": 0,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-completed-cloud-sync",
+      "title": "靈魂雲端同步",
+      "description": "私有庫安全配置完成",
+      "stage": "completed",
+      "priority": "low",
+      "category": "Legacy GitHub",
+      "sort_order": 1,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
+      "task_id": "github-completed-github-skill",
+      "title": "GitHub 技能激活",
+      "description": "gh CLI 部署成功",
+      "stage": "completed",
+      "priority": "low",
+      "category": "Legacy GitHub",
+      "sort_order": 2,
+      "created_at": "2026-02-05T19:33:00+08:00",
+      "updated_at": "2026-02-05T19:33:00+08:00"
+    },
+    {
       "task_id": "task-001",
       "title": "Confirm dashboard persistence behavior",
       "description": "Decide whether local browser storage is enough or a writable backend is required.",
       "stage": "idea",
       "priority": "high",
       "category": "Product",
-      "sort_order": 0,
+      "sort_order": 5,
       "created_at": "2026-05-31T01:50:00+08:00",
       "updated_at": "2026-05-31T01:50:00+08:00"
     },
@@ -18,7 +139,7 @@
       "stage": "discussion",
       "priority": "medium",
       "category": "Planning",
-      "sort_order": 0,
+      "sort_order": 2,
       "created_at": "2026-05-31T01:50:00+08:00",
       "updated_at": "2026-05-31T01:50:00+08:00"
     },
@@ -40,7 +161,7 @@
       "stage": "executing",
       "priority": "high",
       "category": "Engineering",
-      "sort_order": 0,
+      "sort_order": 1,
       "created_at": "2026-05-31T01:50:00+08:00",
       "updated_at": "2026-05-31T01:50:00+08:00"
     },
@@ -51,7 +172,7 @@
       "stage": "completed",
       "priority": "low",
       "category": "Documentation",
-      "sort_order": 0,
+      "sort_order": 3,
       "created_at": "2026-05-31T01:50:00+08:00",
       "updated_at": "2026-05-31T01:50:00+08:00"
     }
