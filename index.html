@@ -3,168 +3,533 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anibis 戰略監控沙盤</title>
+    <title>ToDoList Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { background: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .card { cursor: grab; transition: transform 0.2s; }
-        .card:active { cursor: grabbing; transform: scale(1.05); }
-        .ghost { opacity: 0.5; background: #334155; }
+        :root { color-scheme: dark; }
+        body {
+            margin: 0;
+            background: #101418;
+            color: #f4f7f9;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+        .panel {
+            background: rgba(26, 32, 38, 0.92);
+            border: 1px solid rgba(151, 164, 175, 0.18);
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+        }
+        .task-card {
+            cursor: grab;
+            transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+        }
+        .task-card:active {
+            cursor: grabbing;
+            transform: scale(1.02);
+        }
+        .drop-list { min-height: 156px; }
+        .sortable-ghost {
+            opacity: 0.45;
+            background: rgba(68, 84, 101, 0.65);
+        }
+        .empty-message { display: none; }
+        .drop-list:empty + .empty-message { display: block; }
+        input, textarea, select {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            border-radius: 0.375rem;
+            color: #f8fafc;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #22d3ee;
+            outline: none;
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
     </style>
 </head>
-<body class="p-6">
-    <div class="max-w-[1600px] mx-auto">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-400">Anibis 核心監控系統 <span class="text-sm font-normal text-slate-500">v1.2</span></h1>
-            <div class="flex gap-4">
-                <div class="glass px-4 py-2 rounded-lg text-sm">
-                    狀態: <span class="text-green-400">運作中</span>
-                </div>
+<body>
+    <main class="mx-auto flex min-h-screen max-w-[1680px] flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
+        <header class="flex flex-col gap-4 border-b border-slate-700/70 pb-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">Google Sheet workflow board</p>
+                <h1 class="mt-2 text-3xl font-semibold tracking-normal text-white">ToDoList Dashboard</h1>
+                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                    Track ideas, discussions, waiting items, active work, and completed tasks in one board.
+                </p>
             </div>
-        </div>
+            <div class="flex flex-wrap items-center gap-2 text-sm text-slate-300">
+                <span class="rounded-md border border-slate-700 bg-slate-900 px-3 py-2">Version <strong id="version-text">--</strong></span>
+                <span class="rounded-md border border-slate-700 bg-slate-900 px-3 py-2">Last sync <strong id="last-sync-text">--</strong></span>
+            </div>
+        </header>
 
-        <!-- Main Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            
-            <!-- Column 1: System Status & Ideas -->
-            <div class="flex flex-col gap-4">
-                <div class="glass p-6 rounded-2xl">
-                    <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2">系統狀態</h2>
-                    <div class="space-y-4">
+        <section class="grid gap-4 xl:grid-cols-[340px_minmax(0,1fr)]">
+            <aside class="space-y-4">
+                <section class="panel rounded-lg p-5">
+                    <div class="flex items-center justify-between gap-3">
                         <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span>Token 使用量</span>
-                                <span id="token-percent-text">--%</span>
+                            <h2 class="text-lg font-semibold text-white">System Status</h2>
+                            <p class="mt-1 text-sm text-slate-400">Status data refreshes every minute.</p>
+                        </div>
+                        <span id="status-badge" class="rounded-md bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300">Loading</span>
+                    </div>
+
+                    <div class="mt-6 space-y-5">
+                        <div>
+                            <div class="mb-2 flex justify-between text-sm">
+                                <span class="text-slate-300">Token usage</span>
+                                <span id="token-percent-text" class="font-semibold text-cyan-300">--%</span>
                             </div>
-                            <div class="w-full bg-slate-700 rounded-full h-2">
-                                <div id="token-bar" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+                            <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+                                <div id="token-bar" class="h-full rounded-full bg-cyan-400 transition-all" style="width: 0%"></div>
                             </div>
                         </div>
-                        <div class="text-sm text-slate-400">
-                            <p>GitHub: <span id="github-status" class="text-green-400">連線中</span></p>
-                            <p>更新: <span id="last-sync" class="text-slate-500 text-[10px]">--</span></p>
+
+                        <dl class="space-y-3 text-sm">
+                            <div class="flex items-center justify-between gap-3">
+                                <dt class="text-slate-400">GitHub</dt>
+                                <dd id="github-status-text" class="font-medium text-slate-100">--</dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-3">
+                                <dt class="text-slate-400">Task count</dt>
+                                <dd id="task-count-text" class="font-medium text-slate-100">--</dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-3">
+                                <dt class="text-slate-400">Storage</dt>
+                                <dd id="storage-status-text" class="font-medium text-slate-100">--</dd>
+                            </div>
+                        </dl>
+
+                        <div id="permission-message" class="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-5 text-amber-100">
+                            Google Sheet API is not configured yet. This page is using local fallback data.
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Idea Zone -->
-                <div class="glass p-6 rounded-2xl bg-slate-800/50">
-                    <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-yellow-500">Idea 靈感</h2>
-                    <div id="idea-list" class="space-y-3 min-h-[150px]">
-                        <div class="card glass p-3 rounded-xl border-l-4 border-cyan-500">
-                            <h3 class="font-bold text-sm">🌀 數位影子計畫</h3>
-                            <p class="text-[10px] text-slate-400">存檔主公知識與語氣，實現自動化社交與邏輯克隆。</p>
+                <section class="panel rounded-lg p-5">
+                    <h2 class="text-lg font-semibold text-white">Add Task</h2>
+                    <form id="task-form" class="mt-4 space-y-3">
+                        <div>
+                            <label for="task-title-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Title</label>
+                            <input id="task-title-input" name="title" class="w-full px-3 py-2 text-sm" maxlength="120" required>
                         </div>
-                        <div class="card glass p-3 rounded-xl border-l-4 border-yellow-500">
-                            <h3 class="font-bold text-sm">GitHub 全自動獵人</h3>
-                            <p class="text-[10px] text-slate-400">自動偵測開源專案更新與 AI 新技能。</p>
+                        <div>
+                            <label for="task-description-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Description</label>
+                            <textarea id="task-description-input" name="description" class="min-h-20 w-full px-3 py-2 text-sm" maxlength="500"></textarea>
                         </div>
-                        <div class="card glass p-3 rounded-xl border-l-4 border-purple-500">
-                            <h3 class="font-bold text-sm">全自動程式碼工坊</h3>
-                            <p class="text-[10px] text-slate-400">根據構想自動建庫並分階段提交實作。</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="task-stage-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Stage</label>
+                                <select id="task-stage-input" name="stage" class="w-full px-3 py-2 text-sm"></select>
+                            </div>
+                            <div>
+                                <label for="task-priority-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Priority</label>
+                                <select id="task-priority-input" name="priority" class="w-full px-3 py-2 text-sm">
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="card glass p-3 rounded-xl border-l-4 border-pink-500">
-                            <h3 class="font-bold text-sm">🔊 語音簡報</h3>
-                            <p class="text-[10px] text-slate-400">清晨語音彙整美聯儲、川普言論與斐波點位。</p>
+                        <div>
+                            <label for="task-category-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Category</label>
+                            <input id="task-category-input" name="category" class="w-full px-3 py-2 text-sm" value="General">
                         </div>
-                        <div class="card glass p-3 rounded-xl border-l-4 border-orange-500">
-                            <h3 class="font-bold text-sm">🗺️ 總經地圖</h3>
-                            <p class="text-[10px] text-slate-400">視覺化連結關稅、利率與幣價之因果關係。</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        <button id="add-task-button" type="submit" class="w-full rounded-md bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300">
+                            Add task
+                        </button>
+                    </form>
+                </section>
+            </aside>
 
-            <!-- Column 2: Discussion -->
-            <div class="glass p-6 rounded-2xl border-t-4 border-indigo-500 bg-indigo-900/10">
-                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-indigo-400">💬 討論區</h2>
-                <div id="discussion-list" class="space-y-3 min-h-[300px]">
-                    <div class="card glass p-4 rounded-xl border-l-4 border-indigo-400">
-                        <h3 class="font-bold">戰略目標：財務自由</h3>
-                        <p class="text-xs text-slate-400 italic">"主公大人偏好白話、實作導引與有立場的建議。"</p>
-                    </div>
-                    <div class="card glass p-4 rounded-xl border-l-4 border-indigo-300">
-                        <h3 class="font-bold">技術分析筆記</h3>
-                        <p class="text-xs text-slate-400">斐波繪製法：1軸為底部起點，0軸為頂部。</p>
-                    </div>
-                </div>
-            </div>
+            <section>
+                <div id="notice-box" class="mb-4 hidden rounded-lg border p-4 text-sm"></div>
+                <div id="board" class="grid gap-4 md:grid-cols-2 xl:grid-cols-5"></div>
+            </section>
+        </section>
 
-            <!-- Column 3: Waiting -->
-            <div class="glass p-6 rounded-2xl border-t-4 border-slate-500">
-                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-slate-400">等待中</h2>
-                <div id="waiting-list" class="space-y-3 min-h-[300px]">
-                </div>
-            </div>
-
-            <!-- Column 4: Executing -->
-            <div class="glass p-6 rounded-2xl border-t-4 border-blue-500">
-                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-blue-400">執行中</h2>
-                <div id="executing-list" class="space-y-3 min-h-[300px]">
-                    <div class="card glass p-4 rounded-xl border-l-4 border-blue-400">
-                        <h3 class="font-bold">核心監控系統 v1.2</h3>
-                        <p class="text-xs text-slate-400">討論區塊建置中...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Column 5: Completed -->
-            <div class="glass p-6 rounded-2xl border-t-4 border-green-500">
-                <h2 class="text-xl font-semibold mb-4 border-b border-slate-700 pb-2 text-green-400">已完成</h2>
-                <div id="completed-list" class="space-y-3 min-h-[300px]">
-                    <div class="card glass p-4 rounded-xl border-l-4 border-green-400">
-                        <h3 class="font-bold">分身領地部署</h3>
-                        <p class="text-[10px] text-slate-400">已建立 .openclaw-office 獨立環境與 Isis/Horus/Ammit 配置。</p>
-                    </div>
-                    <div class="card glass p-4 rounded-xl border-l-4 border-green-400">
-                        <h3 class="font-bold">靈魂雲端同步</h3>
-                        <p class="text-xs text-slate-400">私有庫安全配置完成</p>
-                    </div>
-                    <div class="card glass p-4 rounded-xl border-l-4 border-green-400">
-                        <h3 class="font-bold">GitHub 技能激活</h3>
-                        <p class="text-xs text-slate-400">gh CLI 部署成功</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <footer class="mt-12 text-center text-slate-600 text-xs">
-            主公大人尊用 · 忠誠助手 Anibis 構建
+        <footer class="border-t border-slate-800 pt-4 text-center text-xs text-slate-500">
+            ToDoList Dashboard MVP based on the Anibis dashboard pattern.
         </footer>
-    </div>
+    </main>
+
+    <template id="column-template">
+        <section class="panel flex min-h-[360px] flex-col rounded-lg">
+            <div class="border-b border-slate-700/70 p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="column-title text-base font-semibold text-white"></h2>
+                    <span class="column-count rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-300">0</span>
+                </div>
+                <p class="column-description mt-1 text-xs leading-5 text-slate-400"></p>
+            </div>
+            <div class="p-3">
+                <div class="drop-list space-y-3"></div>
+                <p class="empty-message rounded-md border border-dashed border-slate-700 p-4 text-center text-sm text-slate-500">
+                    No tasks in this stage.
+                </p>
+            </div>
+        </section>
+    </template>
+
+    <template id="task-template">
+        <article class="task-card rounded-lg border-l-4 bg-slate-900/80 p-4">
+            <div class="flex items-start justify-between gap-3">
+                <h3 class="task-title text-sm font-semibold leading-5 text-white"></h3>
+                <span class="task-priority shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold"></span>
+            </div>
+            <p class="task-description mt-2 text-xs leading-5 text-slate-400"></p>
+            <div class="mt-4 flex items-center justify-between gap-3 text-[11px] text-slate-500">
+                <span class="task-category"></span>
+                <time class="task-updated"></time>
+            </div>
+        </article>
+    </template>
 
     <script>
-        const ideaList = document.getElementById('idea-list');
-        const discussionList = document.getElementById('discussion-list');
-        const waitingList = document.getElementById('waiting-list');
-        const executingList = document.getElementById('executing-list');
-        const completedList = document.getElementById('completed-list');
+        const TASK_API_URL = "https://script.google.com/macros/s/AKfycbxkDqKYgKwkJk_fmv3Row1dxtiNFSbIorAo8HNODpR51cyAx3fbrShNg2jbx5sJ2sZnGQ/exec";
+        const stageDefinitions = [
+            { id: "idea", title: "Idea", description: "Raw ideas and possible work items.", accentClass: "border-cyan-400" },
+            { id: "discussion", title: "Discussion", description: "Items that need clarification before work starts.", accentClass: "border-violet-400" },
+            { id: "waiting", title: "Waiting", description: "Ready items blocked by dependency or timing.", accentClass: "border-slate-400" },
+            { id: "executing", title: "Executing", description: "Active work currently in progress.", accentClass: "border-blue-400" },
+            { id: "completed", title: "Completed", description: "Finished items kept for review.", accentClass: "border-emerald-400" }
+        ];
 
-        [ideaList, discussionList, waitingList, executingList, completedList].forEach(el => {
-            new Sortable(el, {
-                group: 'shared',
-                animation: 150,
-                ghostClass: 'ghost'
-            });
-        });
+        const allowedStages = new Set(stageDefinitions.map((stage) => stage.id));
+        const priorityStyles = {
+            high: "bg-rose-500/15 text-rose-200",
+            medium: "bg-amber-500/15 text-amber-200",
+            low: "bg-emerald-500/15 text-emerald-200"
+        };
+        const localStorageKey = "todolist-dashboard-tasks";
+        let tasks = [];
+        let isRemoteReady = Boolean(TASK_API_URL);
 
-        // Fetch Dynamic Status
-        async function updateStatus() {
+        const boardElement = document.getElementById("board");
+        const columnTemplate = document.getElementById("column-template");
+        const taskTemplate = document.getElementById("task-template");
+        const noticeBox = document.getElementById("notice-box");
+        const taskForm = document.getElementById("task-form");
+
+        function setRemoteState(isReady) {
+            isRemoteReady = isReady;
+            document.getElementById("storage-status-text").textContent = isRemoteReady ? "Google Sheet" : "Local fallback";
+            document.getElementById("permission-message").textContent = isRemoteReady
+                ? "Tasks are loaded from Google Sheet. New tasks and drag changes are saved through Apps Script."
+                : "Google Sheet API is not configured yet. This page is using local fallback data.";
+        }
+
+        function showNotice(type, message) {
+            const typeClasses = {
+                error: "border-rose-500/40 bg-rose-500/10 text-rose-100",
+                info: "border-cyan-500/40 bg-cyan-500/10 text-cyan-100",
+                success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-100"
+            };
+            noticeBox.className = `mb-4 rounded-lg border p-4 text-sm ${typeClasses[type] || typeClasses.info}`;
+            noticeBox.textContent = message;
+            noticeBox.classList.remove("hidden");
+        }
+
+        function hideNotice() {
+            noticeBox.classList.add("hidden");
+        }
+
+        function makeTaskId() {
+            if (crypto && typeof crypto.randomUUID === "function") {
+                return crypto.randomUUID();
+            }
+            return `task-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        }
+
+        function validateTask(rawTask) {
+            if (!rawTask || typeof rawTask !== "object") return null;
+
+            const title = String(rawTask.title || "").trim();
+            const stage = String(rawTask.stage || "").trim();
+            if (!title || title.length > 120 || !allowedStages.has(stage)) return null;
+
+            const priority = ["low", "medium", "high"].includes(rawTask.priority) ? rawTask.priority : "medium";
+            return {
+                task_id: String(rawTask.task_id || rawTask.id || makeTaskId()),
+                title,
+                description: String(rawTask.description || "").slice(0, 500),
+                stage,
+                priority,
+                category: String(rawTask.category || "General"),
+                sort_order: Number.isFinite(Number(rawTask.sort_order)) ? Number(rawTask.sort_order) : 0,
+                created_at: String(rawTask.created_at || ""),
+                updated_at: String(rawTask.updated_at || "")
+            };
+        }
+
+        function getSavedTasks() {
             try {
-                const response = await fetch('./status.json');
-                const data = await response.json();
-                document.getElementById('token-percent-text').innerText = data.tokenUsed + '%';
-                document.getElementById('token-bar').style.width = data.tokenUsed + '%';
-                document.getElementById('github-status').innerText = data.githubStatus;
-                document.getElementById('last-sync').innerText = data.lastSync;
-            } catch (e) {
-                console.error("Failed to fetch status", e);
+                const savedTasks = JSON.parse(localStorage.getItem(localStorageKey) || "null");
+                return Array.isArray(savedTasks) ? savedTasks.map(validateTask).filter(Boolean) : null;
+            } catch (error) {
+                return null;
             }
         }
+
+        function saveTasks() {
+            localStorage.setItem(localStorageKey, JSON.stringify(tasks));
+        }
+
+        function updateColumnCounts() {
+            stageDefinitions.forEach((stage) => {
+                const columnElement = document.querySelector(`[data-stage="${stage.id}"]`);
+                columnElement.querySelector(".column-count").textContent = String(tasks.filter((task) => task.stage === stage.id).length);
+            });
+            document.getElementById("task-count-text").textContent = String(tasks.length);
+        }
+
+        function renderTask(task, accentClass) {
+            const taskNode = taskTemplate.content.cloneNode(true);
+            const taskElement = taskNode.querySelector(".task-card");
+            taskElement.dataset.taskId = task.task_id;
+            taskElement.classList.add(accentClass);
+            taskNode.querySelector(".task-title").textContent = task.title;
+            taskNode.querySelector(".task-description").textContent = task.description || "No description.";
+            taskNode.querySelector(".task-priority").textContent = task.priority;
+            taskNode.querySelector(".task-priority").className = `task-priority shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold ${priorityStyles[task.priority]}`;
+            taskNode.querySelector(".task-category").textContent = task.category;
+            taskNode.querySelector(".task-updated").textContent = task.updated_at ? `Updated ${task.updated_at}` : "Updated --";
+            return taskNode;
+        }
+
+        function renderBoard() {
+            boardElement.innerHTML = "";
+            stageDefinitions.forEach((stage) => {
+                const columnNode = columnTemplate.content.cloneNode(true);
+                const columnElement = columnNode.querySelector("section");
+                const listElement = columnNode.querySelector(".drop-list");
+                columnElement.dataset.stage = stage.id;
+                listElement.dataset.stage = stage.id;
+                columnNode.querySelector(".column-title").textContent = stage.title;
+                columnNode.querySelector(".column-description").textContent = stage.description;
+
+                tasks
+                    .filter((task) => task.stage === stage.id)
+                    .sort((firstTask, secondTask) => firstTask.sort_order - secondTask.sort_order)
+                    .forEach((task) => listElement.appendChild(renderTask(task, stage.accentClass)));
+
+                boardElement.appendChild(columnNode);
+            });
+
+            document.querySelectorAll(".drop-list").forEach((listElement) => {
+                new Sortable(listElement, {
+                    group: "tasks",
+                    animation: 150,
+                    ghostClass: "sortable-ghost",
+                    onEnd: handleTaskMove
+                });
+            });
+            updateColumnCounts();
+        }
+
+        async function apiRequest(payload) {
+            if (!TASK_API_URL) {
+                throw new Error("TASK_API_URL is not configured.");
+            }
+            const response = await fetch(TASK_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const data = await response.json();
+            if (!data.ok) {
+                throw new Error(data.error || "Apps Script request failed.");
+            }
+            return data;
+        }
+
+        async function loadRemoteTasks() {
+            const response = await fetch(TASK_API_URL, { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const data = await response.json();
+            if (data.ok === false) {
+                throw new Error(data.error || "Apps Script read failed.");
+            }
+            const sourceTasks = Array.isArray(data) ? data : data.tasks;
+            return sourceTasks.map(validateTask).filter(Boolean);
+        }
+
+        async function loadFallbackTasks() {
+            const savedTasks = getSavedTasks();
+            if (savedTasks && savedTasks.length > 0) {
+                return savedTasks;
+            }
+            const response = await fetch("./tasks.json", { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const data = await response.json();
+            const sourceTasks = Array.isArray(data) ? data : data.tasks;
+            return sourceTasks.map(validateTask).filter(Boolean);
+        }
+
+        async function loadTasks() {
+            hideNotice();
+            if (TASK_API_URL) {
+                try {
+                    tasks = await loadRemoteTasks();
+                    saveTasks();
+                    setRemoteState(true);
+                    renderBoard();
+                    return;
+                } catch (error) {
+                    setRemoteState(false);
+                    showNotice("error", "Could not load Google Sheet data. Using local fallback data.");
+                }
+            }
+
+            try {
+                tasks = await loadFallbackTasks();
+                saveTasks();
+                renderBoard();
+            } catch (error) {
+                tasks = [];
+                renderBoard();
+                showNotice("error", "Could not load dashboard data.");
+            }
+        }
+
+        async function handleTaskMove(event) {
+            const taskId = event.item.dataset.taskId;
+            const targetStage = event.to.dataset.stage;
+            if (!allowedStages.has(targetStage)) {
+                showNotice("error", "Drop the task into a valid column.");
+                renderBoard();
+                return;
+            }
+
+            const previousTasks = tasks.map((task) => ({ ...task }));
+            tasks = tasks.map((task) => task.task_id === taskId ? { ...task, stage: targetStage, updated_at: new Date().toISOString() } : task);
+            document.querySelectorAll(".drop-list").forEach((listElement) => {
+                Array.from(listElement.children).forEach((cardElement, index) => {
+                    const currentTask = tasks.find((task) => task.task_id === cardElement.dataset.taskId);
+                    if (currentTask) {
+                        currentTask.stage = listElement.dataset.stage;
+                        currentTask.sort_order = index;
+                    }
+                });
+            });
+
+            saveTasks();
+            updateColumnCounts();
+            hideNotice();
+
+            if (!isRemoteReady) return;
+
+            try {
+                await apiRequest({
+                    action: "update_tasks",
+                    tasks: tasks.map(({ task_id, stage, sort_order, updated_at }) => ({ task_id, stage, sort_order, updated_at }))
+                });
+                showNotice("success", "Task order saved to Google Sheet.");
+            } catch (error) {
+                tasks = previousTasks;
+                saveTasks();
+                renderBoard();
+                showNotice("error", "Could not save task movement. Reverted to the previous state.");
+            }
+        }
+
+        async function handleTaskCreate(event) {
+            event.preventDefault();
+            const formData = new FormData(taskForm);
+            const now = new Date().toISOString();
+            const newTask = validateTask({
+                task_id: makeTaskId(),
+                title: formData.get("title"),
+                description: formData.get("description"),
+                stage: formData.get("stage"),
+                priority: formData.get("priority"),
+                category: formData.get("category") || "General",
+                sort_order: tasks.filter((task) => task.stage === formData.get("stage")).length,
+                created_at: now,
+                updated_at: now
+            });
+
+            if (!newTask) {
+                showNotice("error", "Task title is required and task fields must be valid.");
+                return;
+            }
+
+            const button = document.getElementById("add-task-button");
+            button.disabled = true;
+
+            try {
+                if (isRemoteReady) {
+                    await apiRequest({ action: "create_task", task: newTask });
+                    await loadTasks();
+                    showNotice("success", "Task added to Google Sheet.");
+                } else {
+                    tasks.push(newTask);
+                    saveTasks();
+                    renderBoard();
+                    showNotice("info", "Task added to local fallback data. Configure TASK_API_URL to save to Google Sheet.");
+                }
+                taskForm.reset();
+                document.getElementById("task-category-input").value = "General";
+            } catch (error) {
+                showNotice("error", "Could not add task.");
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function normalizeStatus(rawStatus) {
+            const tokenUsed = Number(rawStatus.token_used ?? rawStatus.tokenUsed ?? 0);
+            return {
+                token_used: Number.isFinite(tokenUsed) ? Math.min(100, Math.max(0, tokenUsed)) : 0,
+                github_status: String(rawStatus.github_status ?? rawStatus.githubStatus ?? "Unknown"),
+                last_sync: String(rawStatus.last_sync ?? rawStatus.lastSync ?? "--"),
+                version: String(rawStatus.version ?? "0.2.0")
+            };
+        }
+
+        async function updateStatus() {
+            try {
+                const response = await fetch("./status.json", { cache: "no-store" });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const status = normalizeStatus(await response.json());
+                document.getElementById("token-percent-text").textContent = `${status.token_used}%`;
+                document.getElementById("token-bar").style.width = `${status.token_used}%`;
+                document.getElementById("github-status-text").textContent = status.github_status;
+                document.getElementById("last-sync-text").textContent = status.last_sync;
+                document.getElementById("version-text").textContent = status.version;
+                document.getElementById("status-badge").textContent = "Ready";
+                document.getElementById("status-badge").className = "rounded-md bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-200";
+            } catch (error) {
+                document.getElementById("status-badge").textContent = "Error";
+                document.getElementById("status-badge").className = "rounded-md bg-rose-500/15 px-2.5 py-1 text-xs font-semibold text-rose-200";
+                showNotice("error", "Could not load status data.");
+            }
+        }
+
+        function initializeForm() {
+            const stageInput = document.getElementById("task-stage-input");
+            stageDefinitions.forEach((stage) => {
+                const option = document.createElement("option");
+                option.value = stage.id;
+                option.textContent = stage.title;
+                stageInput.appendChild(option);
+            });
+            taskForm.addEventListener("submit", handleTaskCreate);
+        }
+
+        setRemoteState(Boolean(TASK_API_URL));
+        initializeForm();
+        loadTasks();
         updateStatus();
         setInterval(updateStatus, 60000);
     </script>

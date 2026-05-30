@@ -1,0 +1,59 @@
+{
+  "tasks": [
+    {
+      "task_id": "task-001",
+      "title": "Confirm dashboard persistence behavior",
+      "description": "Decide whether local browser storage is enough or a writable backend is required.",
+      "stage": "idea",
+      "priority": "high",
+      "category": "Product",
+      "sort_order": 0,
+      "created_at": "2026-05-31T01:50:00+08:00",
+      "updated_at": "2026-05-31T01:50:00+08:00"
+    },
+    {
+      "task_id": "task-002",
+      "title": "Review ToDoList dashboard MVP scope",
+      "description": "Keep the first version focused on five workflow stages, status data, and drag/drop movement.",
+      "stage": "discussion",
+      "priority": "medium",
+      "category": "Planning",
+      "sort_order": 0,
+      "created_at": "2026-05-31T01:50:00+08:00",
+      "updated_at": "2026-05-31T01:50:00+08:00"
+    },
+    {
+      "task_id": "task-003",
+      "title": "Prepare static hosting path",
+      "description": "Confirm whether the updated dashboard will be served locally or through GitHub Pages.",
+      "stage": "waiting",
+      "priority": "medium",
+      "category": "Release",
+      "sort_order": 0,
+      "created_at": "2026-05-31T01:50:00+08:00",
+      "updated_at": "2026-05-31T01:50:00+08:00"
+    },
+    {
+      "task_id": "task-004",
+      "title": "Upgrade Anibis dashboard layout",
+      "description": "Replace the old static cards with data-driven workflow columns.",
+      "stage": "executing",
+      "priority": "high",
+      "category": "Engineering",
+      "sort_order": 0,
+      "created_at": "2026-05-31T01:50:00+08:00",
+      "updated_at": "2026-05-31T01:50:00+08:00"
+    },
+    {
+      "task_id": "task-005",
+      "title": "Create basic requirements specification",
+      "description": "Document MVP scope, functional requirements, validation rules, and acceptance criteria.",
+      "stage": "completed",
+      "priority": "low",
+      "category": "Documentation",
+      "sort_order": 0,
+      "created_at": "2026-05-31T01:50:00+08:00",
+      "updated_at": "2026-05-31T01:50:00+08:00"
+    }
+  ]
+}
