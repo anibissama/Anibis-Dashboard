@@ -2,6 +2,14 @@
 
 This dashboard can run on GitHub Pages while storing task data in Google Sheet through Apps Script.
 
+The current API supports:
+
+- `GET`: read tasks
+- `POST create_task`: create a task
+- `POST edit_task`: edit a task
+- `POST delete_task`: delete a task
+- `POST update_tasks`: update stage/order after drag and drop
+
 ## 1. Create the Sheet
 
 1. Open Google Drive with the account you want to use.
@@ -43,6 +51,8 @@ https://docs.google.com/spreadsheets/d/SHEET_ID_HERE/edit
 3. Set `Execute as` to `Me`.
 4. Set access to `Anyone with the link`.
 5. Deploy and copy the Web App URL ending in `/exec`.
+
+When `Code.gs` changes, update the script, then use `Deploy > Manage deployments > Edit > New version > Deploy`. Saving the script is not enough for the Web App URL to use the new code.
 
 ## 4. Connect the Dashboard
 

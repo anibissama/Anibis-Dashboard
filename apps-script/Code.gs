@@ -34,6 +34,17 @@ function doPost(event) {
       return jsonOutput({ ok: true, task });
     }
 
+    if (payload.action === "edit_task") {
+      const task = normalizeTask(payload.task);
+      editTask(sheet, task);
+      return jsonOutput({ ok: true, task });
+    }
+
+    if (payload.action === "delete_task") {
+      deleteTask(sheet, payload.task_id);
+      return jsonOutput({ ok: true, tasks: readTasks(sheet) });
+    }
+
     if (payload.action === "update_tasks") {
       updateTasks(sheet, payload.tasks || []);
       return jsonOutput({ ok: true, tasks: readTasks(sheet) });
@@ -155,6 +166,42 @@ function updateTasks(sheet, taskUpdates) {
     row[8] = update.updated_at;
   });
   range.setValues(rows);
+}
+
+function editTask(sheet, task) {
+  const rowNumber = findTaskRow(sheet, task.task_id);
+  if (!rowNumber) {
+    throw new Error("Task not found.");
+  }
+  sheet.getRange(rowNumber, 1, 1, HEADERS.length).setValues([HEADERS.map((header) => task[header])]);
+}
+
+function deleteTask(sheet, taskId) {
+  const rowNumber = findTaskRow(sheet, taskId);
+  if (!rowNumber) {
+    throw new Error("Task not found.");
+  }
+  sheet.deleteRow(rowNumber);
+}
+
+function findTaskRow(sheet, taskId) {
+  const id = String(taskId || "");
+  if (!id) {
+    return 0;
+  }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return 0;
+  }
+
+  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  for (let index = 0; index < ids.length; index += 1) {
+    if (String(ids[index][0]) === id) {
+      return index + 2;
+    }
+  }
+  return 0;
 }
 
 function jsonOutput(data) {
