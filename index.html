@@ -41,6 +41,38 @@
             grid-template-columns: repeat(5, minmax(248px, 1fr));
             min-width: 1320px;
         }
+        .status-banner {
+            display: grid;
+            grid-template-columns: minmax(180px, 1.2fr) repeat(4, minmax(120px, 0.8fr));
+            gap: 1px;
+            overflow: hidden;
+        }
+        .status-cell {
+            min-width: 0;
+            background: rgba(15, 23, 42, 0.45);
+            padding: 1rem;
+        }
+        .modal-backdrop {
+            align-items: center;
+            background: rgba(2, 6, 23, 0.76);
+            bottom: 0;
+            display: none;
+            justify-content: center;
+            left: 0;
+            padding: 1rem;
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 40;
+        }
+        .modal-backdrop.is-open {
+            display: flex;
+        }
+        .modal-panel {
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+            width: min(560px, 100%);
+        }
         .task-title,
         .task-description,
         .task-category,
@@ -62,6 +94,11 @@
         .task-updated {
             text-align: right;
         }
+        @media (min-width: 1280px) {
+            [data-device-label]::after {
+                content: "Desktop";
+            }
+        }
         @media (max-width: 1279px) {
             .board-grid {
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -72,6 +109,29 @@
             }
             .task-updated {
                 text-align: left;
+            }
+            .status-banner {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            [data-device-label]::after {
+                content: "Tablet";
+            }
+        }
+        @media (max-width: 767px) {
+            .board-scroll {
+                overflow-x: visible;
+            }
+            .board-grid {
+                grid-template-columns: 1fr;
+            }
+            .status-banner {
+                grid-template-columns: 1fr;
+            }
+            .status-cell {
+                padding: 0.875rem;
+            }
+            [data-device-label]::after {
+                content: "Mobile";
             }
         }
         .sortable-ghost {
@@ -109,100 +169,105 @@
             <div class="flex flex-wrap items-center gap-2 text-sm text-slate-300">
                 <span class="rounded-md border border-slate-700 bg-slate-900 px-3 py-2">Version <strong id="version-text">--</strong></span>
                 <span class="rounded-md border border-slate-700 bg-slate-900 px-3 py-2">Last sync <strong id="last-sync-text">--</strong></span>
+                <button id="open-task-modal-button" type="button" class="rounded-md bg-cyan-400 px-4 py-2 font-semibold text-slate-950 transition hover:bg-cyan-300">
+                    Add Task
+                </button>
             </div>
         </header>
 
-        <section class="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-            <aside class="space-y-4">
-                <section class="panel rounded-lg p-5">
+        <section class="panel rounded-lg">
+            <div class="status-banner">
+                <div class="status-cell">
                     <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-lg font-semibold text-white">System Status</h2>
-                            <p class="mt-1 text-sm text-slate-400">Status data refreshes every minute.</p>
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">System Status</p>
+                            <p id="permission-message" class="mt-1 text-sm leading-5 text-amber-100">
+                                Google Sheet API is not configured yet. This page is using local fallback data.
+                            </p>
                         </div>
-                        <span id="status-badge" class="rounded-md bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300">Loading</span>
+                        <span id="status-badge" class="shrink-0 rounded-md bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300">Loading</span>
                     </div>
-
-                    <div class="mt-6 space-y-5">
-                        <div>
-                            <div class="mb-2 flex justify-between text-sm">
-                                <span class="text-slate-300">Token usage</span>
-                                <span id="token-percent-text" class="font-semibold text-cyan-300">--%</span>
-                            </div>
-                            <div class="h-2 overflow-hidden rounded-full bg-slate-800">
-                                <div id="token-bar" class="h-full rounded-full bg-cyan-400 transition-all" style="width: 0%"></div>
-                            </div>
-                        </div>
-
-                        <dl class="space-y-3 text-sm">
-                            <div class="flex items-center justify-between gap-3">
-                                <dt class="text-slate-400">GitHub</dt>
-                                <dd id="github-status-text" class="font-medium text-slate-100">--</dd>
-                            </div>
-                            <div class="flex items-center justify-between gap-3">
-                                <dt class="text-slate-400">Task count</dt>
-                                <dd id="task-count-text" class="font-medium text-slate-100">--</dd>
-                            </div>
-                            <div class="flex items-center justify-between gap-3">
-                                <dt class="text-slate-400">Storage</dt>
-                                <dd id="storage-status-text" class="font-medium text-slate-100">--</dd>
-                            </div>
-                        </dl>
-
-                        <div id="permission-message" class="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm leading-5 text-amber-100">
-                            Google Sheet API is not configured yet. This page is using local fallback data.
-                        </div>
-                    </div>
-                </section>
-
-                <section class="panel rounded-lg p-5">
-                    <h2 class="text-lg font-semibold text-white">Add Task</h2>
-                    <form id="task-form" class="mt-4 space-y-3">
-                        <div>
-                            <label for="task-title-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Title</label>
-                            <input id="task-title-input" name="title" class="w-full px-3 py-2 text-sm" maxlength="120" required>
-                        </div>
-                        <div>
-                            <label for="task-description-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Description</label>
-                            <textarea id="task-description-input" name="description" class="min-h-20 w-full px-3 py-2 text-sm" maxlength="500"></textarea>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label for="task-stage-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Stage</label>
-                                <select id="task-stage-input" name="stage" class="w-full px-3 py-2 text-sm"></select>
-                            </div>
-                            <div>
-                                <label for="task-priority-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Priority</label>
-                                <select id="task-priority-input" name="priority" class="w-full px-3 py-2 text-sm">
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="low">Low</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="task-category-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Category</label>
-                            <input id="task-category-input" name="category" class="w-full px-3 py-2 text-sm" value="General">
-                        </div>
-                        <button id="add-task-button" type="submit" class="w-full rounded-md bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300">
-                            Add task
-                        </button>
-                    </form>
-                </section>
-            </aside>
-
-            <section>
-                <div id="notice-box" class="mb-4 hidden rounded-lg border p-4 text-sm"></div>
-                <div class="board-scroll">
-                    <div id="board" class="board-grid grid gap-4"></div>
                 </div>
-            </section>
+                <div class="status-cell">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Token</p>
+                    <div class="mt-2 flex items-center gap-3">
+                        <div class="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-800">
+                            <div id="token-bar" class="h-full rounded-full bg-cyan-400 transition-all" style="width: 0%"></div>
+                        </div>
+                        <span id="token-percent-text" class="shrink-0 text-sm font-semibold text-cyan-300">--%</span>
+                    </div>
+                </div>
+                <div class="status-cell">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">GitHub</p>
+                    <p id="github-status-text" class="mt-2 text-sm font-semibold text-slate-100">--</p>
+                </div>
+                <div class="status-cell">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tasks</p>
+                    <p id="task-count-text" class="mt-2 text-sm font-semibold text-slate-100">--</p>
+                </div>
+                <div class="status-cell">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Storage / Device</p>
+                    <p class="mt-2 text-sm font-semibold text-slate-100"><span id="storage-status-text">--</span> · <span data-device-label></span></p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div id="notice-box" class="mb-4 hidden rounded-lg border p-4 text-sm"></div>
+            <div class="board-scroll">
+                <div id="board" class="board-grid grid gap-4"></div>
+            </div>
         </section>
 
         <footer class="border-t border-slate-800 pt-4 text-center text-xs text-slate-500">
             ToDoList Dashboard MVP based on the Anibis dashboard pattern.
         </footer>
     </main>
+
+    <div id="task-modal" class="modal-backdrop" aria-hidden="true">
+        <section class="modal-panel panel rounded-lg p-5" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <h2 id="task-modal-title" class="text-lg font-semibold text-white">Add Task</h2>
+                    <p class="mt-1 text-sm text-slate-400">Create a task and save it to Google Sheet.</p>
+                </div>
+                <button id="close-task-modal-button" type="button" class="rounded-md border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800">
+                    Close
+                </button>
+            </div>
+            <form id="task-form" class="mt-5 space-y-3">
+                <div>
+                    <label for="task-title-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Title</label>
+                    <input id="task-title-input" name="title" class="w-full px-3 py-2 text-sm" maxlength="120" required>
+                </div>
+                <div>
+                    <label for="task-description-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Description</label>
+                    <textarea id="task-description-input" name="description" class="min-h-20 w-full px-3 py-2 text-sm" maxlength="500"></textarea>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                        <label for="task-stage-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Stage</label>
+                        <select id="task-stage-input" name="stage" class="w-full px-3 py-2 text-sm"></select>
+                    </div>
+                    <div>
+                        <label for="task-priority-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Priority</label>
+                        <select id="task-priority-input" name="priority" class="w-full px-3 py-2 text-sm">
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label for="task-category-input" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">Category</label>
+                    <input id="task-category-input" name="category" class="w-full px-3 py-2 text-sm" value="General">
+                </div>
+                <button id="add-task-button" type="submit" class="w-full rounded-md bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300">
+                    Add task
+                </button>
+            </form>
+        </section>
+    </div>
 
     <template id="column-template">
         <section class="panel flex min-h-[360px] flex-col rounded-lg">
@@ -261,6 +326,9 @@
         const taskTemplate = document.getElementById("task-template");
         const noticeBox = document.getElementById("notice-box");
         const taskForm = document.getElementById("task-form");
+        const taskModal = document.getElementById("task-modal");
+        const openTaskModalButton = document.getElementById("open-task-modal-button");
+        const closeTaskModalButton = document.getElementById("close-task-modal-button");
 
         function setRemoteState(isReady) {
             isRemoteReady = isReady;
@@ -283,6 +351,18 @@
 
         function hideNotice() {
             noticeBox.classList.add("hidden");
+        }
+
+        function openTaskModal() {
+            taskModal.classList.add("is-open");
+            taskModal.setAttribute("aria-hidden", "false");
+            document.getElementById("task-title-input").focus();
+        }
+
+        function closeTaskModal() {
+            taskModal.classList.remove("is-open");
+            taskModal.setAttribute("aria-hidden", "true");
+            openTaskModalButton.focus();
         }
 
         function makeTaskId() {
@@ -540,6 +620,7 @@
                 }
                 taskForm.reset();
                 document.getElementById("task-category-input").value = "General";
+                closeTaskModal();
             } catch (error) {
                 showNotice("error", "Could not add task.");
             } finally {
@@ -585,6 +666,18 @@
                 stageInput.appendChild(option);
             });
             taskForm.addEventListener("submit", handleTaskCreate);
+            openTaskModalButton.addEventListener("click", openTaskModal);
+            closeTaskModalButton.addEventListener("click", closeTaskModal);
+            taskModal.addEventListener("click", (event) => {
+                if (event.target === taskModal) {
+                    closeTaskModal();
+                }
+            });
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape" && taskModal.classList.contains("is-open")) {
+                    closeTaskModal();
+                }
+            });
         }
 
         setRemoteState(Boolean(TASK_API_URL));
