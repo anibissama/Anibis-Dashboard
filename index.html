@@ -187,15 +187,13 @@
     <main class="mx-auto flex min-h-screen max-w-[1920px] flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
         <header class="flex flex-col gap-4 border-b border-slate-700/70 pb-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">Google Sheet workflow board</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">Workflow board</p>
                 <h1 class="mt-2 text-3xl font-semibold tracking-normal text-white">ToDoList Dashboard</h1>
                 <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
                     Track ideas, discussions, waiting items, active work, and completed tasks in one board.
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-sm text-slate-300">
-                <span class="rounded-md border border-slate-700 bg-slate-900 px-3 py-2">Version <strong id="version-text">--</strong></span>
-                <span class="rounded-md border border-slate-700 bg-slate-900 px-3 py-2">Last sync <strong id="last-sync-text">--</strong></span>
                 <button id="open-task-modal-button" type="button" class="rounded-md bg-cyan-400 px-4 py-2 font-semibold text-slate-950 transition hover:bg-cyan-300">
                     Add Task
                 </button>
@@ -209,7 +207,7 @@
                         <div class="min-w-0">
                             <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">System Status</p>
                             <p id="permission-message" class="mt-1 text-sm leading-5 text-amber-100">
-                                Google Sheet API is not configured yet. This page is using local fallback data.
+                                Remote data is not configured yet. This page is using local fallback data.
                             </p>
                         </div>
                         <span id="status-badge" class="shrink-0 rounded-md bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300">Loading</span>
@@ -234,7 +232,7 @@
                 </div>
                 <div class="status-cell">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Storage / Device</p>
-                    <p class="mt-2 text-sm font-semibold text-slate-100"><span id="storage-status-text">--</span> · <span data-device-label></span></p>
+                    <p class="mt-2 text-sm font-semibold text-slate-100"><span id="storage-status-text">--</span> / <span data-device-label></span></p>
                 </div>
             </div>
         </section>
@@ -246,8 +244,12 @@
             </div>
         </section>
 
-        <footer class="border-t border-slate-800 pt-4 text-center text-xs text-slate-500">
-            ToDoList Dashboard MVP based on the Anibis dashboard pattern.
+        <footer class="flex flex-col items-center justify-center gap-2 border-t border-slate-800 pt-4 text-center text-xs text-slate-500 sm:flex-row">
+            <span>ToDoList Dashboard MVP based on the Anibis dashboard pattern.</span>
+            <span class="hidden text-slate-700 sm:inline">/</span>
+            <span>Version <strong id="version-text" class="font-semibold text-slate-400">--</strong></span>
+            <span class="hidden text-slate-700 sm:inline">/</span>
+            <span>Status updated <strong id="last-sync-text" class="font-semibold text-slate-400">--</strong></span>
         </footer>
     </main>
 
@@ -256,7 +258,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div>
                     <h2 id="task-modal-title" class="text-lg font-semibold text-white">Add Task</h2>
-                    <p id="task-modal-description" class="mt-1 text-sm text-slate-400">Create a task and save it to Google Sheet.</p>
+                    <p id="task-modal-description" class="mt-1 text-sm text-slate-400">Create a task and save it to remote storage.</p>
                 </div>
                 <button id="close-task-modal-button" type="button" class="rounded-md border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-800">
                     Close
@@ -365,10 +367,10 @@
 
         function setRemoteState(isReady) {
             isRemoteReady = isReady;
-            document.getElementById("storage-status-text").textContent = isRemoteReady ? "Google Sheet" : "Local fallback";
+            document.getElementById("storage-status-text").textContent = isRemoteReady ? "Remote" : "Local fallback";
             document.getElementById("permission-message").textContent = isRemoteReady
-                ? "Tasks are loaded from Google Sheet. New tasks and drag changes are saved through Apps Script."
-                : "Google Sheet API is not configured yet. This page is using local fallback data.";
+                ? "Tasks are loaded from remote storage. New tasks and drag changes are saved automatically."
+                : "Remote data is not configured yet. This page is using local fallback data.";
         }
 
         function showNotice(type, message) {
@@ -398,7 +400,7 @@
             document.getElementById("task-id-input").value = "";
             document.getElementById("task-category-input").value = "General";
             document.getElementById("task-modal-title").textContent = "Add Task";
-            document.getElementById("task-modal-description").textContent = "Create a task and save it to Google Sheet.";
+            document.getElementById("task-modal-description").textContent = "Create a task and save it to remote storage.";
             document.getElementById("add-task-button").textContent = "Add task";
             openTaskModal();
         }
@@ -412,7 +414,7 @@
             document.getElementById("task-priority-input").value = task.priority;
             document.getElementById("task-category-input").value = task.category;
             document.getElementById("task-modal-title").textContent = "Edit Task";
-            document.getElementById("task-modal-description").textContent = "Update task details and save them to Google Sheet.";
+            document.getElementById("task-modal-description").textContent = "Update task details and save them to remote storage.";
             document.getElementById("add-task-button").textContent = "Save changes";
             taskModal.classList.add("is-open");
             taskModal.setAttribute("aria-hidden", "false");
@@ -589,7 +591,7 @@
                     return;
                 } catch (error) {
                     setRemoteState(false);
-                    showNotice("error", "Could not load Google Sheet data. Using local fallback data.");
+                    showNotice("error", "Could not load remote data. Using local fallback data.");
                 }
             }
 
@@ -636,7 +638,7 @@
                     action: "update_tasks",
                     tasks: tasks.map(({ task_id, stage, sort_order, updated_at }) => ({ task_id, stage, sort_order, updated_at }))
                 });
-                showNotice("success", "Task order saved to Google Sheet.");
+                showNotice("success", "Task order saved.");
             } catch (error) {
                 tasks = previousTasks;
                 saveTasks();
@@ -674,14 +676,14 @@
                 if (isRemoteReady) {
                     await apiRequest({ action: existingTask ? "edit_task" : "create_task", task: newTask });
                     await loadTasks();
-                    showNotice("success", existingTask ? "Task updated in Google Sheet." : "Task added to Google Sheet.");
+                    showNotice("success", existingTask ? "Task updated." : "Task added.");
                 } else {
                     tasks = existingTask
                         ? tasks.map((task) => task.task_id === existingTask.task_id ? newTask : task)
                         : [...tasks, newTask];
                     saveTasks();
                     renderBoard();
-                    showNotice("info", existingTask ? "Task updated in local fallback data." : "Task added to local fallback data. Configure TASK_API_URL to save to Google Sheet.");
+                    showNotice("info", existingTask ? "Task updated in local fallback data." : "Task added to local fallback data. Configure TASK_API_URL to save remotely.");
                 }
                 taskForm.reset();
                 document.getElementById("task-category-input").value = "General";
@@ -708,7 +710,7 @@
                 if (isRemoteReady) {
                     await apiRequest({ action: "delete_task", task_id: task.task_id });
                     await loadTasks();
-                    showNotice("success", "Task deleted from Google Sheet.");
+                    showNotice("success", "Task deleted.");
                 } else {
                     showNotice("info", "Task deleted from local fallback data.");
                 }
